@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { Mensaje } from '../interface/mensaje.interface';
+import { AngularFireAuth } from '@angular/fire/auth';
+import firebase from 'firebase/app';
 
 @Injectable({
   providedIn: 'root'
@@ -8,22 +10,43 @@ import { Mensaje } from '../interface/mensaje.interface';
 export class ChatService {
   private itemsCollection!: AngularFirestoreCollection<Mensaje>;
   public chats: Mensaje[] = [];
-  
-  constructor(private afs: AngularFirestore) {}
+  public usuario: any = {};
+  constructor(private afs: AngularFirestore,
+              public afuth: AngularFireAuth)
+  {
+  this.afuth.authState.subscribe(user => {
+    console.log('Estado del usuario', user);
+    if (!user) {
+      return;
+    }
+    this.usuario.nombre = user.displayName;
+    this.usuario.uid = user.uid;
+  });
+  }
+  login(proveedor: string) {
+    this.afuth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  }
+  logout() {
+    this.usuario = {};
+    this.afuth.signOut();
+  }
   cargarMensajes(){
-    this.itemsCollection = this.afs.collection<Mensaje>('chats');
-    return this.itemsCollection.valueChanges().subscribe((mensajes:Mensaje[])=>{
+    this.itemsCollection = this.afs.collection<Mensaje>('chats', refs => refs.orderBy('fecha', 'desc').limit(5));
+    return this.itemsCollection.valueChanges().subscribe((mensajes: Mensaje[]) => {
       console.log(mensajes);
-      this.chats = mensajes;
-    })
+      this.chats = [];
+      for (const mensaje of mensajes) {
+        this.chats.unshift(mensaje);
+      }
+    });
   }
 
   agregarMensaje(texto: string){
-    let mensaje: Mensaje = {
+    const mensaje: Mensaje = {
       nombre: 'Rosario Aspajo',
       mensaje: texto,
       fecha: new Date().getTime()
-    }
+    };
     return this.itemsCollection.add(mensaje);
   }
 

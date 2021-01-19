@@ -8,17 +8,19 @@ import { AngularFireModule } from '@angular/fire';
 import { environment } from '../environments/environment';
 import { AngularFireAnalyticsModule } from '@angular/fire/analytics';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
-//Componentes
+// Componentes
 import { ChatComponent } from './components/chat/chat.component';
 import { ChatService } from './providers/chat.service';
-//Servicios
+import { LoginComponent } from './components/login/login.component';
+// Servicios
 
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    ChatComponent
+    ChatComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
